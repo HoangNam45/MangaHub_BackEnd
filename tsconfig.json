@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // JS version đầu ra
+    "module": "CommonJS", // Hệ thống module cho Node.js
+    "rootDir": "src", // Nơi chứa code TS
+    "outDir": "dist", // Nơi xuất JS sau khi build
+    "strict": true, // Bật strict mode (an toàn hơn)
+    "esModuleInterop": true, // Cho phép import default từ CommonJS
+    "skipLibCheck": true, // Bỏ qua type check trong node_modules
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true, // Cho phép import file JSON
+    "types": ["node"], // Type definitions cho Node.js
+    "allowJs": false // Không cho phép file .js trong compile
+  },
+  "baseUrl": ".",
+  "paths": {
+    "@/*": ["src/*"]
+  },
+  "include": ["src"], // Những file cần build
+  "exclude": ["node_modules", "dist"] // Không build folder này
+}
