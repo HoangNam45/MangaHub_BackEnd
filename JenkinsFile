@@ -1,0 +1,70 @@
+pipeline {
+  agent any
+
+  environment {
+    REGISTRY  = 'https://index.docker.io/v1/'
+    IMAGE_REPO = 'nhhnam/mangahub-backend' 
+    DOCKER_CREDS = credentials('docker_hub_credentials') // ID của Docker Hub credentials trong Jenkins
+    // Tag theo short SHA + 'latest'
+    GIT_SHORT = sh(script: "echo ${env.GIT_COMMIT} | cut -c1-7", returnStdout: true).trim()
+  }
+
+  options {
+    timestamps()
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build image') {
+      steps {
+        script {
+          // Nếu build trên ARM nhưng deploy x86_64, thêm --platform=linux/amd64
+          sh "docker build -t ${IMAGE_REPO}:${GIT_SHORT} ."
+          sh "docker tag ${IMAGE_REPO}:${GIT_SHORT} ${IMAGE_REPO}:latest"
+        }
+      }
+    }
+
+    stage('Push to Docker Hub') {
+      steps {
+        script {
+          docker.withRegistry(REGISTRY, 'docker_hub_credentials') {
+            sh "docker push ${IMAGE_REPO}:${GIT_SHORT}"
+            sh "docker push ${IMAGE_REPO}:latest"
+          }
+        }
+      }
+    }
+
+    stage('Deploy (same VPS)') {
+      steps {
+        script {
+          // Tên container và cổng tuỳ backend của bạn
+          def appName = "mangahub-backend"
+          def portMap = "6000:5000"   // đổi nếu app chạy cổng khác
+
+          sh """
+            set -e
+            docker pull ${IMAGE_REPO}:latest
+            docker rm -f ${appName} || true
+            docker run -d --name ${appName} \\
+              -p ${portMap} \\
+              --restart unless-stopped \\
+              ${IMAGE_REPO}:latest
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
+    }
+  }
+}

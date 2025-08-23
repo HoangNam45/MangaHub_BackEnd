@@ -31,6 +31,11 @@ app.use(cookieParser());
 // 5. Passport initialization
 app.use(passport.initialize());
 
+// 6. Health check endpoint (before API routes)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
 app.use("/api/v1", routes);
 
 // 7. Error handler (global)

@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import createError from "http-errors";
 import { verifyAccessToken, TokenPayload } from "../services/jwt.service";
+import { User } from "../models/User";
 
 // Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
-      user?: TokenPayload;
+      user?: User;
     }
   }
 }

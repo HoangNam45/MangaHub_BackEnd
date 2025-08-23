@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { handleError } from "../utils/handleError";
+import {
+  setRefreshTokenCookie,
+  clearRefreshTokenCookie,
+} from "../utils/cookieHelper";
 import createError from "http-errors";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -149,12 +153,7 @@ export const verifyEmail = async (
     await user.save();
 
     // Set refresh token as httpOnly cookie
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
     res.status(200).json({
       message: "Email verified successfully. You are now logged in!",
@@ -261,12 +260,7 @@ export const login = async (
     await user.save();
 
     // Set refresh token as httpOnly cookie
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
     res.status(200).json({
       message: "Login successful",
@@ -312,9 +306,6 @@ export const refreshToken = async (
     // Generate only new access token (keep existing refresh token)
     const accessToken = generateAccessToken(user);
 
-    // No need to update refresh tokens in database or cookie
-    // The existing refresh token remains valid until its expiry
-
     res.status(200).json({
       message: "Token refreshed successfully",
       accessToken: accessToken,
@@ -349,11 +340,7 @@ export const logout = async (
     }
 
     // Clear refresh token cookie
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-    });
+    clearRefreshTokenCookie(res);
 
     res.status(200).json({
       message: "Logout successful",

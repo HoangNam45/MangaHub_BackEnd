@@ -27,9 +27,7 @@ services:
 
   # Node.js Backend Application
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: nhhnam/mangahub-backend:latest
     container_name: mangahub-backend
     restart: unless-stopped
     environment:

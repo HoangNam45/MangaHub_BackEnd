@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { handleError } from "../utils/handleError";
+import { setRefreshTokenCookie } from "../utils/cookieHelper";
 import { generateTokenPair } from "../services/jwt.service";
 import { User } from "../models/User";
 
@@ -35,12 +36,7 @@ export const handleOAuthSuccess = async (
     await fullUser.save();
 
     // Set refresh token as httpOnly cookie
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
     // Redirect to frontend với access token
     const redirectUrl = `${process.env.FRONTEND_URL}/api/auth/callback?token=${
