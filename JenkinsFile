@@ -41,16 +41,19 @@ pipeline {
       }
     }
 
-    stage('Deploy with Docker Compose') {
+    stage('Deploy (same VPS)') {
       steps {
         script {
           def appName = "mangahub-backend"
+          def portMap = "6000:5000"   
           sh """
             set -e
             docker pull ${IMAGE_REPO}:latest
             docker rm -f ${appName} || true
-            cd ~/mangahub
-            docker compose --env-file .env.production -f docker-compose-vps.yml up -d
+            docker run -d --name ${appName} \\
+              -p ${portMap} \\
+              --restart unless-stopped \\
+              ${IMAGE_REPO}:latest
           """
         }
       }
