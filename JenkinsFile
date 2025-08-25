@@ -4,7 +4,7 @@ pipeline {
   environment {
     REGISTRY  = 'https://index.docker.io/v1/'
     IMAGE_REPO = 'nhhnam/mangahub-backend' 
-    DOCKER_CREDS = credentials('docker_hub_credentials') // ID của Docker Hub credentials trong Jenkins
+    DOCKER_CREDS = credentials('docker_hub_credentials') // Docker Hub credentials
     // Tag theo short SHA + 'latest'
     GIT_SHORT = sh(script: "echo ${env.GIT_COMMIT} | cut -c1-7", returnStdout: true).trim()
   }
@@ -41,19 +41,17 @@ pipeline {
       }
     }
 
-    stage('Deploy (same VPS)') {
+    stage('Deploy with Docker Compose') {
       steps {
         script {
-          def appName = "mangahub-backend"
-          def portMap = "6000:5000"   
           sh """
             set -e
-            docker pull ${IMAGE_REPO}:latest
-            docker rm -f ${appName} || true
-            docker run -d --name ${appName} \\
-              -p ${portMap} \\
-              --restart unless-stopped \\
-              ${IMAGE_REPO}:latest
+            cd /root/mangahub  
+
+            docker compose pull
+
+            docker compose down
+            docker compose --env-file .env.production up -d
           """
         }
       }
