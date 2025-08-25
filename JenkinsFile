@@ -46,7 +46,7 @@ pipeline {
         script {
           sh """
             set -e
-            cd /root/mangahub  
+            cd /var/mangahub    
 
             docker compose pull
 
