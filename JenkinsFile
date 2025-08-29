@@ -46,7 +46,7 @@ pipeline {
         script {
           sh """
             set -e
-            cd /var/mangahub    
+            cd /var/mangahub 
             docker compose -f docker-compose-vps.yml --env-file .env.production pull
             docker compose -f docker-compose-vps.yml --env-file .env.production down
             docker compose -f docker-compose-vps.yml --env-file .env.production up -d

@@ -1,14 +1,20 @@
 import axios from "axios";
+import { SocksProxyAgent } from "socks-proxy-agent";
 import type {
   Manga,
   MangaListResponse,
   FetchMangaParams,
 } from "../types/manga";
 
+const warpProxy = "socks5h://warp:1080";
+const agent = new SocksProxyAgent(warpProxy);
+
 // Tạo một axios instance riêng cho MangaDex API
 const mangaDexClient = axios.create({
   baseURL: process.env.MANGADEX_API_URL || "https://api.mangadex.org",
   timeout: 20000, // 20 giây
+  httpAgent: agent,
+  httpsAgent: agent,
 });
 
 export const mangaService = {
