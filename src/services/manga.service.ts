@@ -8,6 +8,7 @@ import type {
 // Tạo một axios instance riêng cho MangaDex API
 const mangaDexClient = axios.create({
   baseURL: process.env.MANGADEX_API_URL || "https://api.mangadex.org",
+  timeout: 20000, // 20 giây
 });
 
 export const mangaService = {
@@ -17,11 +18,11 @@ export const mangaService = {
   ): Promise<MangaListResponse> {
     try {
       const {
-        limit = 25,
+        limit = 15,
         offset = 0,
         order = { latestUploadedChapter: "desc" },
         availableTranslatedLanguage = ["en"],
-        includes = ["cover_art", "author", "artist"],
+        includes = ["cover_art", "author"],
       } = params;
 
       const response = await mangaDexClient.get("/manga", {

@@ -6,7 +6,7 @@ export const mangaController = {
   async getMangaList(req: Request, res: Response) {
     try {
       const {
-        limit = 25,
+        limit = 15,
         offset = 0,
         order = "desc",
         language = "en",
@@ -19,7 +19,7 @@ export const mangaController = {
         availableTranslatedLanguage: Array.isArray(language)
           ? (language as string[])
           : [language as string],
-        includes: ["cover_art", "author", "artist"],
+        includes: ["cover_art", "author"],
       };
 
       const result = await mangaService.fetchMangaList(params);
