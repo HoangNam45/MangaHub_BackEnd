@@ -25,6 +25,30 @@ services:
     networks:
       - mangahub-network
 
+  # Warp Client container (SOCKS5 proxy)
+  warp:
+    image: caomingjun/warp
+    container_name: warp
+    restart: unless-stopped
+    devices:
+      - /dev/net/tun
+    privileged: true
+    ports:
+      - "1080:1080" # SOCKS5 proxy
+    environment:
+      - WARP_SLEEP=2
+      - WARP_ENABLE_NAT=1
+      # - WARP_LICENSE_KEY=your_license_key  # nếu bạn có
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    volumes:
+      - ./data:/var/lib/cloudflare-warp
+    networks:
+      mangahub-network:
+        ipv4_address: 172.30.0.10
+
   # Node.js Backend Application
   backend:
     image: nhhnam/mangahub-backend:latest
@@ -48,10 +72,11 @@ services:
       FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
       REDIS_URL: ${REDIS_URL}
     ports:
-      - "6000:${PORT}"
+      - "6000:${PORT}" # vẫn expose ra port ngoài
     depends_on:
       - mongodb
       - redis
+      - warp
     networks:
       - mangahub-network
 
@@ -66,3 +91,6 @@ volumes:
 networks:
   mangahub-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
