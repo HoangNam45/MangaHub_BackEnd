@@ -114,4 +114,82 @@ export const mangaController = {
       });
     }
   },
+
+  // GET /api/manga/:id/detail - Lấy thông tin chi tiết manga với chapters
+  async getMangaDetail(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { limit = 100, offset = 0 } = req.query;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: "Manga ID is required",
+        });
+      }
+
+      const result = await mangaService.getMangaDetail(
+        id,
+        Number(limit),
+        Number(offset)
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Manga details with chapters fetched successfully",
+        data: {
+          manga: result.manga,
+          chapters: result.chapters,
+          pagination: {
+            totalChapters: result.totalChapters,
+            limit: Number(limit),
+            offset: Number(offset),
+            hasNext: Number(offset) + Number(limit) < result.totalChapters,
+          },
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch manga details with chapters",
+        error: error.message,
+      });
+    }
+  },
+
+  // GET /api/manga/chapter/:id/images - Lấy ảnh của chapter
+  async getChapterImages(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: "Chapter ID is required",
+        });
+      }
+
+      const result = await mangaService.getChapterImages(id);
+
+      res.status(200).json({
+        success: true,
+        message: "Chapter images fetched successfully",
+        data: {
+          chapterId: result.chapterId,
+          totalPages: result.images.length,
+          images: result.images,
+          server: {
+            baseUrl: result.baseUrl,
+            hash: result.hash,
+          },
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch chapter images",
+        error: error.message,
+      });
+    }
+  },
 };

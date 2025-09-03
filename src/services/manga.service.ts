@@ -4,6 +4,9 @@ import type {
   Manga,
   MangaListResponse,
   FetchMangaParams,
+  Chapter,
+  MangaDetailResponse,
+  ChapterImagesResponse,
 } from "../types/manga";
 
 const useProxy = process.env.NODE_ENV === "production";
@@ -177,6 +180,99 @@ export const mangaService = {
         error.response?.data?.message ||
           error.message ||
           "Failed to fetch manga details"
+      );
+    }
+  },
+
+  // Fetch manga details with chapters
+  async getMangaDetail(
+    id: string,
+    limit: number = 100,
+    offset: number = 0
+  ): Promise<MangaDetailResponse> {
+    try {
+      // Get manga info
+      const manga = await this.getMangaById(id);
+
+      // Get chapters
+      const chaptersResponse = await mangaDexClient.get(`/manga/${id}/feed`, {
+        params: {
+          limit,
+          offset,
+          "order[volume]": "desc",
+          "order[chapter]": "desc",
+          "translatedLanguage[]": ["en"],
+        },
+      });
+
+      const chapters: Chapter[] = chaptersResponse.data.data.map(
+        (chapter: any) => ({
+          id: chapter.id,
+          type: chapter.type,
+          attributes: {
+            title:
+              chapter.attributes.title ||
+              `Chapter ${chapter.attributes.chapter}`,
+            volume: chapter.attributes.volume || "",
+            chapter: chapter.attributes.chapter || "",
+            pages: chapter.attributes.pages || 0,
+            translatedLanguage: chapter.attributes.translatedLanguage || "en",
+            uploader: chapter.attributes.uploader || "",
+            externalUrl: chapter.attributes.externalUrl || null,
+            createdAt: chapter.attributes.createdAt || "",
+            updatedAt: chapter.attributes.updatedAt || "",
+            publishAt: chapter.attributes.publishAt || "",
+            readableAt: chapter.attributes.readableAt || "",
+          },
+          relationships: chapter.relationships || [],
+        })
+      );
+
+      return {
+        manga,
+        chapters,
+        totalChapters: chaptersResponse.data.total || 0,
+      };
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch manga details with chapters"
+      );
+    }
+  },
+
+  // Fetch chapter images
+  async getChapterImages(chapterId: string): Promise<ChapterImagesResponse> {
+    try {
+      // First get the chapter reading server info
+      const serverResponse = await mangaDexClient.get(
+        `/at-home/server/${chapterId}`
+      );
+
+      const { baseUrl, chapter } = serverResponse.data;
+      const { hash, data, dataSaver } = chapter;
+
+      // Create image URLs
+      const images = data.map((filename: string, index: number) => ({
+        page: index + 1,
+        filename,
+        url: `${baseUrl}/data/${hash}/${filename}`,
+      }));
+
+      return {
+        chapterId,
+        hash,
+        data,
+        dataSaver,
+        baseUrl,
+        images,
+      };
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch chapter images"
       );
     }
   },

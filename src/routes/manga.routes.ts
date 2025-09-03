@@ -9,6 +9,12 @@ router.get("/", mangaController.getMangaList);
 // GET /api/manga/search - Tìm kiếm manga
 router.get("/search", mangaController.searchManga);
 
+// GET /api/manga/:id/detail - Lấy chi tiết manga với chapters
+router.get("/:id/detail", mangaController.getMangaDetail);
+
+// GET /api/manga/chapter/:id/images - Lấy ảnh của chapter
+router.get("/chapter/:id/images", mangaController.getChapterImages);
+
 // GET /api/manga/:id - Lấy chi tiết manga theo ID
 router.get("/:id", mangaController.getMangaById);
 

@@ -71,3 +71,45 @@ export interface FetchMangaParams {
   availableTranslatedLanguage?: string[];
   includes?: string[];
 }
+
+export interface ChapterAttributes {
+  title: string;
+  volume: string;
+  chapter: string;
+  pages: number;
+  translatedLanguage: string;
+  uploader: string;
+  externalUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishAt: string;
+  readableAt: string;
+}
+
+export interface Chapter {
+  id: string;
+  type: string;
+  attributes: ChapterAttributes;
+  relationships: MangaRelationship[];
+}
+
+export interface MangaDetailResponse {
+  manga: Manga;
+  chapters: Chapter[];
+  totalChapters: number;
+}
+
+export interface ChapterImage {
+  page: number;
+  filename: string;
+  url: string;
+}
+
+export interface ChapterImagesResponse {
+  chapterId: string;
+  hash: string;
+  data: string[];
+  dataSaver: string[];
+  baseUrl: string;
+  images: ChapterImage[];
+}
