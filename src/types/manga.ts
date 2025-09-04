@@ -70,6 +70,8 @@ export interface FetchMangaParams {
   };
   availableTranslatedLanguage?: string[];
   includes?: string[];
+  status?: string[];
+  includedTags?: string[];
 }
 
 export interface ChapterAttributes {

@@ -10,6 +10,8 @@ export const mangaController = {
         offset = 0,
         order = "desc",
         language = "en",
+        status,
+        includedTags,
       } = req.query;
 
       const params = {
@@ -20,6 +22,20 @@ export const mangaController = {
           ? (language as string[])
           : [language as string],
         includes: ["cover_art", "author"],
+        ...(status && {
+          status: Array.isArray(status)
+            ? (status as string[])
+            : typeof status === "string" && status.includes(",")
+            ? status.split(",").map((s) => s.trim())
+            : [status as string],
+        }),
+        ...(includedTags && {
+          includedTags: Array.isArray(includedTags)
+            ? (includedTags as string[])
+            : typeof includedTags === "string" && includedTags.includes(",")
+            ? includedTags.split(",").map((tag) => tag.trim())
+            : [includedTags as string],
+        }),
       };
 
       const result = await mangaService.fetchMangaList(params);
@@ -47,7 +63,14 @@ export const mangaController = {
   // GET /api/manga/search - Tìm kiếm manga
   async searchManga(req: Request, res: Response) {
     try {
-      const { q: query, limit = 25, offset = 0, language = "en" } = req.query;
+      const {
+        q: query,
+        limit = 15,
+        offset = 0,
+        language = "en",
+        status,
+        includedTags,
+      } = req.query;
 
       if (!query || typeof query !== "string") {
         return res.status(400).json({
@@ -63,6 +86,20 @@ export const mangaController = {
           ? (language as string[])
           : [language as string],
         includes: ["cover_art", "author", "artist"],
+        ...(status && {
+          status: Array.isArray(status)
+            ? (status as string[])
+            : typeof status === "string" && status.includes(",")
+            ? status.split(",").map((s) => s.trim())
+            : [status as string],
+        }),
+        ...(includedTags && {
+          includedTags: Array.isArray(includedTags)
+            ? (includedTags as string[])
+            : typeof includedTags === "string" && includedTags.includes(",")
+            ? includedTags.split(",").map((tag) => tag.trim())
+            : [includedTags as string],
+        }),
       };
 
       const result = await mangaService.searchManga(query, params);
@@ -119,7 +156,7 @@ export const mangaController = {
   async getMangaDetail(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { limit = 100, offset = 0 } = req.query;
+      const { limit = 999999, offset = 0 } = req.query;
 
       if (!id) {
         return res.status(400).json({
@@ -188,6 +225,43 @@ export const mangaController = {
       res.status(500).json({
         success: false,
         message: "Failed to fetch chapter images",
+        error: error.message,
+      });
+    }
+  },
+
+  // GET /api/manga/:id/all-chapters - Lấy toàn bộ chapters của manga
+  async getAllChapters(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { language = "en" } = req.query;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: "Manga ID is required",
+        });
+      }
+
+      const languageArray = Array.isArray(language)
+        ? (language as string[])
+        : [language as string];
+
+      const chapters = await mangaService.getAllChapters(id, languageArray);
+
+      res.status(200).json({
+        success: true,
+        message: "All chapters fetched successfully",
+        data: {
+          mangaId: id,
+          totalChapters: chapters.length,
+          chapters: chapters,
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch all chapters",
         error: error.message,
       });
     }
