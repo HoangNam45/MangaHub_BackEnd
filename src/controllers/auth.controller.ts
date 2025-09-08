@@ -284,8 +284,8 @@ export const refreshToken = async (
   next: NextFunction
 ) => {
   try {
-    // Get refresh token from cookie
-    const refreshToken = req.cookies.refreshToken;
+    // Get refresh token from cookie or request body
+    let refreshToken = req.cookies.refreshToken || req.body.refresh_token;
 
     if (!refreshToken) {
       return next(createError(401, "Refresh token not provided"));
