@@ -37,6 +37,7 @@ export const mangaController = {
             : [includedTags as string],
         }),
       };
+      console.log("Fetch manga list with params:", params);
 
       const result = await mangaService.fetchMangaList(params);
 

@@ -13,6 +13,8 @@ export interface IUser extends Document {
   facebookId?: string;
   avatar?: string;
   refreshTokens: string[];
+  // Followed manga IDs from MangaDx
+  followedManga: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }

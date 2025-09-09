@@ -17,6 +17,11 @@ const UserSchema: Schema<IUser> = new Schema(
     facebookId: { type: String, unique: true, sparse: true },
     avatar: { type: String },
     refreshTokens: [{ type: String }],
+    // Followed manga IDs from MangaDx
+    followedManga: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );
